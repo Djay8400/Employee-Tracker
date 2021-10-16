@@ -1,5 +1,11 @@
 const mysql = require('mysql2');
 const inquirer = require("inquirer");
+const consoleTable = require("console.table");
+
+
+
+// let roles = ``;
+// let departments = ``;
 
 const db = mysql.createConnection(
     {
@@ -8,10 +14,10 @@ const db = mysql.createConnection(
       password: 'Shopping1!',
       database: 'employee_tracker'
     },
-    console.log(`Connected to the employee_tracker database.`)
+    
   );
 
-function userChoice() {
+  const userChoice = () => { 
     inquirer
         .prompt([
             {
@@ -19,9 +25,10 @@ function userChoice() {
                 name: "fork",
                 message: "What would you like to do?",
                 choices:["View All Employees", "Add Employee", "Update Employee Role", "View All Roles", "Add Role", "View All Departments", "Add Departments", "Quit"],
-            },
+            }
         ])
         .then((response) => {
+            
             if (response.fork === "View All Employees") {
                 viewEmployees();
             } else if (response.fork === "Add Employee") {
@@ -44,13 +51,19 @@ function userChoice() {
   
 const viewEmployees = () => { 
     // show employee table
-
+    db.query("SELECT * FROM employee", function (err, results) {
+        console.log()
+        console.log()
+        console.table(results)
+    })
     //Back to main menu
     userChoice();                            
 }
 
 const addEmployee = () => {  
-    inquirer 
+    db.query("SELECT title FROM role", function (err, results) {
+    console.log(results)
+        inquirer 
       .prompt([
         {
         type: "input",
@@ -66,7 +79,7 @@ const addEmployee = () => {
         type: "list",
         name: "role",
         message: "What is the employee's role?", 
-        choices:[""], //needs a way to populate here what the roles are from Role Table  
+        choices: [...results], //needs a way to populate here what the roles are from Role Table  
         },
         {
         type: "list",
@@ -78,16 +91,22 @@ const addEmployee = () => {
      .then((response) => {
         // use response to create a new employee on Employee Table
 
-
-        // db.query('SELECT COUNT(id) AS total_count FROM favorite_books GROUP BY in_stock', function (err, results) {
-        //     console.log(results);
-        // });
+        let employees = {
+            first_name: response.first_name,
+            last_name: response.last_name,
+            role_id: response.role,
+            manager_id: response.manager,
+        };
+        db.query("INSERT INTO employee SET ?", employees, (err, results) => {
+            console.log(results);
+        });
           
         // db.query('SELECT SUM(quantity) AS total_in_section, MAX(quantity) AS max_quantity, MIN(quantity) AS min_quantity, AVG(quantity) AS avg_quantity FROM favorite_books GROUP BY section', function (err, results) {
         //     console.log(results);
         // });
         userChoice();
-    })                           
+    }) 
+})                          
 }
 
 const updateEmpRole = () => {  
@@ -123,7 +142,9 @@ const updateEmpRole = () => {
 
 const viewRoles = () => { 
     // show role table
-
+    db.query("SELECT * FROM role", function (err, results) {
+        console.table(results)
+    })
     //Back to main menu
     userChoice();                            
 }
@@ -165,11 +186,12 @@ const addRole = () => {
 
 const viewDepartments = () => { 
     // show department table
-
+    db.query("SELECT * FROM department", function (err, results) {
+        console.table(results)
     //Back to main menu
     userChoice();                            
+});
 }
-
 const addDepartments = () => {  
     inquirer 
       .prompt([
@@ -196,8 +218,8 @@ const addDepartments = () => {
 
 const iQuit = () => { 
     // quits mysql
-
+    process.exit();
                              
 }
 
-userChoice();
+userChoice()
