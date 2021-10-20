@@ -155,62 +155,70 @@ const updateEmpRole = () => {
 })                           
 }
 
+const viewRoles = () => { 
+    // show role table
+    db.query("SELECT * FROM roles", function (err, results) {
+        console.log()
+        console.log()        
+        console.table(results)
+    })
+    //Back to main menu
+    userChoice();                            
+}
+
+const addRole = () => {  
+    db.query("SELECT id, name FROM department", function (err, results) {
+        const empDepartment = results.map(role => {
+            return `${role.id} ${role.name}`;
+        });  
+    inquirer 
+      .prompt([
+        {
+        type: "input",
+        name: "role",
+        message: "What is the name of the role?",   
+        },
+        {
+        type: "input",
+        name: "salary",
+        message: "What is the salary of the role?",   
+        },
+        {
+        type: "list",
+        name: "department",
+        message: "Which department does the role belong to?",
+        choices: empDepartment, //populate here what departments there are from Department Table   
+        },
+     ])
+     .then((response) => {
+        // use response to add a role on Role Table
+        let departmentId = response.department.split(' ').shift();
+
+        let roleColumns = `(title, salary, department_id)`
+        let employees = `VALUES 
+            ("${response.role}", "${response.salary}", ${departmentId})`
+
+        db.query(`INSERT INTO roles ${roleColumns} ${employees}`, (err, results) => {
+            console.log(results);
+        });
+
+        userChoice();
+    }) 
+  })                            
+}
+
+const viewDepartments = () => { 
+    // show department table
+    db.query("SELECT * FROM department", function (err, results) {
+        console.table(results)
+    //Back to main menu
+    userChoice();                            
+});
+}
+
 userChoice();
 
-// const viewRoles = () => { 
-//     // show role table
-//     db.query("SELECT * FROM role", function (err, results) {
-//         console.log()
-//         console.log()        
-//         console.table(results)
-//     })
-//     //Back to main menu
-//     userChoice();                            
-// }
 
-// const addRole = () => {  
-//     inquirer 
-//       .prompt([
-//         {
-//         type: "input",
-//         name: "role",
-//         message: "What is the name of the role?",   
-//         },
-//         {
-//         type: "input",
-//         name: "salary",
-//         message: "What is the salary of the role?",   
-//         },
-//         {
-//         type: "list",
-//         name: "department",
-//         message: "Which department does the role belong to?",
-//         choices:[""], //needs a way to populate here what departments there are from Department Table   
-//         },
-//      ])
-//      .then((response) => {
-//         // use response to add a role on Role Table
-
-
-//         // db.query('SELECT COUNT(id) AS total_count FROM favorite_books GROUP BY in_stock', function (err, results) {
-//         //     console.log(results);
-//         // });
-          
-//         // db.query('SELECT SUM(quantity) AS total_in_section, MAX(quantity) AS max_quantity, MIN(quantity) AS min_quantity, AVG(quantity) AS avg_quantity FROM favorite_books GROUP BY section', function (err, results) {
-//         //     console.log(results);
-//         // });
-//         userChoice();
-//     })                           
-// }
-
-// const viewDepartments = () => { 
-//     // show department table
-//     db.query("SELECT * FROM department", function (err, results) {
-//         console.table(results)
-//     //Back to main menu
-//     userChoice();                            
-// });
-// }
 // const addDepartments = () => {  
 //     inquirer 
 //       .prompt([
