@@ -15,9 +15,9 @@ const db = mysql.createConnection(
       database: 'employee_tracker'
     },
     
-  );
+);
 
-  const userChoice = () => { 
+const userChoice = () => { 
     inquirer
         .prompt([
             {
@@ -61,165 +61,174 @@ const viewEmployees = () => {
 }
 
 const addEmployee = () => {  
-    db.query("SELECT title FROM role", function (err, results) {
-    console.log(results)
+    db.query("SELECT id, title FROM roles", function (err, results) {
+        const empTitles = results.map(role => {
+            return `${role.id} ${role.title}`;
+        });
+    db.query("SELECT id, first_name, last_name FROM employee", function (err, results) {
+        const empNames = results.map(names => {           
+            return `${names.id} ${names.first_name} ${names.last_name}`;
+        });             
+        
         inquirer 
       .prompt([
         {
         type: "input",
-        name: "first_name",
+        name: "first",
         message: "What is the employee's first name?",   
         },
         {
         type: "input",
-        name: "last_name",
+        name: "last",
         message: "What is the employee's last name?",   
         },
         {
         type: "list",
         name: "role",
         message: "What is the employee's role?", 
-        choices: [...results], //needs a way to populate here what the roles are from Role Table  
+        choices: empTitles, //populate here what the roles are from Role Table  
         },
         {
         type: "list",
         name: "manager",
         message: "Who is the employee's manager?",
-        choices:[""], //needs a way to populate here what the managers are from ??Manager Table??
+        choices:["NULL", ...empNames], //populate here what the managers are from employee table
         },
      ])
      .then((response) => {
-        // use response to create a new employee on Employee Table
+        let empRoleId = response.role.split(' ').shift();
+        let empManagerId = response.manager.split(' ').shift();
 
-        let employees = {
-            first_name: response.first_name,
-            last_name: response.last_name,
-            role_id: response.role,
-            manager_id: response.manager,
-        };
-        db.query("INSERT INTO employee SET ?", employees, (err, results) => {
+        // use response to create a new employee on Employee Table
+        let empColumns = `(first_name, last_name, role_id, manager_id)`
+        let employees = `VALUES 
+            ("${response.first}", "${response.last}", ${empRoleId}, ${empManagerId})`
+                    
+        console.log(employees)
+        db.query(`INSERT INTO employee ${empColumns} ${employees}`, (err, results) => {
             console.log(results);
         });
           
-        // db.query('SELECT SUM(quantity) AS total_in_section, MAX(quantity) AS max_quantity, MIN(quantity) AS min_quantity, AVG(quantity) AS avg_quantity FROM favorite_books GROUP BY section', function (err, results) {
-        //     console.log(results);
-        // });
+        
         userChoice();
     }) 
-})                          
+    })                          
+ }) 
 }
 
-const updateEmpRole = () => {  
-    inquirer 
-      .prompt([
-        {
-        type: "list",
-        name: "employee",
-        message: "Which employee's role do you want to update?",
-        choices:[""], //needs a way to populate here what employees there are from Employee Table   
-        },
-        {
-        type: "list",
-        name: "role",
-        message: "Which role do you want to assign the selected employee?",
-        choices:[""], //needs a way to populate here what the roles are from Role Table 
-        },
-     ])
-     .then((response) => {
-        // use response to change employee's role on Role Table
+userChoice();
+
+// const updateEmpRole = () => {  
+//     inquirer 
+//       .prompt([
+//         {
+//         type: "list",
+//         name: "employee",
+//         message: "Which employee's role do you want to update?",
+//         choices:[""], //needs a way to populate here what employees there are from Employee Table   
+//         },
+//         {
+//         type: "list",
+//         name: "role",
+//         message: "Which role do you want to assign the selected employee?",
+//         choices:[""], //needs a way to populate here what the roles are from Role Table 
+//         },
+//      ])
+//      .then((response) => {
+//         // use response to change employee's role on Role Table
 
 
-        // db.query('SELECT COUNT(id) AS total_count FROM favorite_books GROUP BY in_stock', function (err, results) {
-        //     console.log(results);
-        // });
+//         // db.query('SELECT COUNT(id) AS total_count FROM favorite_books GROUP BY in_stock', function (err, results) {
+//         //     console.log(results);
+//         // });
           
-        // db.query('SELECT SUM(quantity) AS total_in_section, MAX(quantity) AS max_quantity, MIN(quantity) AS min_quantity, AVG(quantity) AS avg_quantity FROM favorite_books GROUP BY section', function (err, results) {
-        //     console.log(results);
-        // });
-        userChoice();
-    })                           
-}
+//         // db.query('SELECT SUM(quantity) AS total_in_section, MAX(quantity) AS max_quantity, MIN(quantity) AS min_quantity, AVG(quantity) AS avg_quantity FROM favorite_books GROUP BY section', function (err, results) {
+//         //     console.log(results);
+//         // });
+//         userChoice();
+//     })                           
+// }
 
-const viewRoles = () => { 
-    // show role table
-    db.query("SELECT * FROM role", function (err, results) {
-        console.table(results)
-    })
-    //Back to main menu
-    userChoice();                            
-}
+// const viewRoles = () => { 
+//     // show role table
+//     db.query("SELECT * FROM role", function (err, results) {
+//         console.log()
+//         console.log()        
+//         console.table(results)
+//     })
+//     //Back to main menu
+//     userChoice();                            
+// }
 
-const addRole = () => {  
-    inquirer 
-      .prompt([
-        {
-        type: "input",
-        name: "role",
-        message: "What is the name of the role?",   
-        },
-        {
-        type: "input",
-        name: "salary",
-        message: "What is the salary of the role?",   
-        },
-        {
-        type: "list",
-        name: "department",
-        message: "Which department does the role belong to?",
-        choices:[""], //needs a way to populate here what departments there are from Department Table   
-        },
-     ])
-     .then((response) => {
-        // use response to add a role on Role Table
+// const addRole = () => {  
+//     inquirer 
+//       .prompt([
+//         {
+//         type: "input",
+//         name: "role",
+//         message: "What is the name of the role?",   
+//         },
+//         {
+//         type: "input",
+//         name: "salary",
+//         message: "What is the salary of the role?",   
+//         },
+//         {
+//         type: "list",
+//         name: "department",
+//         message: "Which department does the role belong to?",
+//         choices:[""], //needs a way to populate here what departments there are from Department Table   
+//         },
+//      ])
+//      .then((response) => {
+//         // use response to add a role on Role Table
 
 
-        // db.query('SELECT COUNT(id) AS total_count FROM favorite_books GROUP BY in_stock', function (err, results) {
-        //     console.log(results);
-        // });
+//         // db.query('SELECT COUNT(id) AS total_count FROM favorite_books GROUP BY in_stock', function (err, results) {
+//         //     console.log(results);
+//         // });
           
-        // db.query('SELECT SUM(quantity) AS total_in_section, MAX(quantity) AS max_quantity, MIN(quantity) AS min_quantity, AVG(quantity) AS avg_quantity FROM favorite_books GROUP BY section', function (err, results) {
-        //     console.log(results);
-        // });
-        userChoice();
-    })                           
-}
+//         // db.query('SELECT SUM(quantity) AS total_in_section, MAX(quantity) AS max_quantity, MIN(quantity) AS min_quantity, AVG(quantity) AS avg_quantity FROM favorite_books GROUP BY section', function (err, results) {
+//         //     console.log(results);
+//         // });
+//         userChoice();
+//     })                           
+// }
 
-const viewDepartments = () => { 
-    // show department table
-    db.query("SELECT * FROM department", function (err, results) {
-        console.table(results)
-    //Back to main menu
-    userChoice();                            
-});
-}
-const addDepartments = () => {  
-    inquirer 
-      .prompt([
-        {
-        type: "input",
-        name: "department",
-        message: "What is the name of the department?",   
-        },
-     ])
-     .then((response) => {
-        // use response to add a department on Department Table
+// const viewDepartments = () => { 
+//     // show department table
+//     db.query("SELECT * FROM department", function (err, results) {
+//         console.table(results)
+//     //Back to main menu
+//     userChoice();                            
+// });
+// }
+// const addDepartments = () => {  
+//     inquirer 
+//       .prompt([
+//         {
+//         type: "input",
+//         name: "department",
+//         message: "What is the name of the department?",   
+//         },
+//      ])
+//      .then((response) => {
+//         // use response to add a department on Department Table
 
 
-        // db.query('SELECT COUNT(id) AS total_count FROM favorite_books GROUP BY in_stock', function (err, results) {
-        //     console.log(results);
-        // });
+//         // db.query('SELECT COUNT(id) AS total_count FROM favorite_books GROUP BY in_stock', function (err, results) {
+//         //     console.log(results);
+//         // });
           
-        // db.query('SELECT SUM(quantity) AS total_in_section, MAX(quantity) AS max_quantity, MIN(quantity) AS min_quantity, AVG(quantity) AS avg_quantity FROM favorite_books GROUP BY section', function (err, results) {
-        //     console.log(results);
-        // });
-        userChoice();
-    })                           
-}
+//         // db.query('SELECT SUM(quantity) AS total_in_section, MAX(quantity) AS max_quantity, MIN(quantity) AS min_quantity, AVG(quantity) AS avg_quantity FROM favorite_books GROUP BY section', function (err, results) {
+//         //     console.log(results);
+//         // });
+//         userChoice();
+//     })                           
+// }
 
-const iQuit = () => { 
-    // quits mysql
-    process.exit();
+// const iQuit = () => { 
+//     // quits mysql
+//     process.exit();
                              
-}
-
-userChoice()
+// }
