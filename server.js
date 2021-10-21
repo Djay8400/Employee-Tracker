@@ -1,12 +1,7 @@
 const mysql = require('mysql2');
 const inquirer = require("inquirer");
-const consoleTable = require("console.table");
-
-
-
-// let roles = ``;
-// let departments = ``;
-
+require("console.table");
+const { printTable } = require("console-table-printer");
 const db = mysql.createConnection(
     {
       host: 'localhost',
@@ -53,8 +48,7 @@ const viewEmployees = () => {
     // show employee table
     db.query("SELECT * FROM employee", function (err, results) {
         console.log()
-        console.log()
-        console.table(results)
+        printTable(results)
     })
     //Back to main menu
     userChoice();                            
@@ -107,8 +101,7 @@ const addEmployee = () => {
         console.log(employees)
         db.query(`INSERT INTO employee ${empColumns} ${employees}`, (err, results) => {
             console.log(results);
-        });
-          
+        });  
         
         userChoice();
     }) 
@@ -124,7 +117,7 @@ const updateEmpRole = () => {
     db.query("SELECT id, first_name, last_name FROM employee", function (err, results) {
         const empNames2 = results.map(names => {           
             return `${names.id} ${names.first_name} ${names.last_name}`;
-        });         
+        });     
     inquirer 
       .prompt([
         {
@@ -157,10 +150,9 @@ const updateEmpRole = () => {
 
 const viewRoles = () => { 
     // show role table
-    db.query("SELECT * FROM roles", function (err, results) {
+    db.query("SELECT * FROM roles", function (err, results) {        
         console.log()
-        console.log()        
-        console.table(results)
+        printTable(results)
     })
     //Back to main menu
     userChoice();                            
@@ -210,41 +202,38 @@ const addRole = () => {
 const viewDepartments = () => { 
     // show department table
     db.query("SELECT * FROM department", function (err, results) {
-        console.table(results)
+        console.log()
+        printTable(results)
     //Back to main menu
     userChoice();                            
 });
 }
 
+const addDepartments = () => {  
+    inquirer 
+      .prompt([
+        {
+        type: "input",
+        name: "department",
+        message: "What is the name of the department?",   
+        },
+     ])
+     .then((response) => {
+        // use response to add a department on Department Table
+        let departmentName = `VALUES 
+            ("${response.department}")`
+
+        db.query(`INSERT INTO department (name) ${departmentName}`, (err, results) => {
+            console.log(results);
+        });
+       
+        userChoice();
+    })                           
+}
+
+const iQuit = () => { 
+    // quits mysql
+    process.exit();                            
+}
+
 userChoice();
-
-
-// const addDepartments = () => {  
-//     inquirer 
-//       .prompt([
-//         {
-//         type: "input",
-//         name: "department",
-//         message: "What is the name of the department?",   
-//         },
-//      ])
-//      .then((response) => {
-//         // use response to add a department on Department Table
-
-
-//         // db.query('SELECT COUNT(id) AS total_count FROM favorite_books GROUP BY in_stock', function (err, results) {
-//         //     console.log(results);
-//         // });
-          
-//         // db.query('SELECT SUM(quantity) AS total_in_section, MAX(quantity) AS max_quantity, MIN(quantity) AS min_quantity, AVG(quantity) AS avg_quantity FROM favorite_books GROUP BY section', function (err, results) {
-//         //     console.log(results);
-//         // });
-//         userChoice();
-//     })                           
-// }
-
-// const iQuit = () => { 
-//     // quits mysql
-//     process.exit();
-                             
-// }
